@@ -1,4 +1,4 @@
-># BADIC SCRIPTS TO IMPLEMENT TRAINING USING OBJECT DETECTION MODELS
+># BASIC SCRIPTS TO IMPLEMENT TRANSFER LEARNING USING OBJECT DETECTION MODELS
 
 **Author: Adedamola Ayodeji Sode**   
 **Email: adedamola.sode@gmail.com**
@@ -16,7 +16,7 @@ All dependencies used are in their latest versions as of 20-04-22, and their cor
 # CONFIGURATION
 1. Create a Project folder with this given directory tree:
 
-<img src="/directory.png" alt="directory tree" width="" height="">
+<img src="/images/directory.png" alt="directory tree" width="" height="">
 
 2. Insert your train and test images and corresponsing .xml labels in the respective train and test folders in the /workspace/images directory
 
