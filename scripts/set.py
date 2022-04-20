@@ -1,11 +1,13 @@
 import os
 
-os.add_dll_directory("C:/Program Files/Nvidia GPU Computing Toolkit/CUDA/v11.2/bin")
-
+import cv2
 import tensorflow as tf
+import numpy as np
 from tensorflow.python.keras.utils.data_utils import get_file
-from object_detection.utils import config_util
+from object_detection.utils import config_util, label_map_util
+from object_detection.utils import visualization_utils as viz_utils
 from object_detection.protos import pipeline_pb2
+from object_detection.builders import model_builder
 from google.protobuf import text_format
 
 
@@ -29,6 +31,7 @@ class Prepare:
         )
         self.checkpoint_path = self.model_path + "/" + f"{self.modelName}"
         self.label_path = self.annotation_path + "/labels.csv"
+        self.eval_path = self.checkpoint_path + "/eval"
 
     def annotate(self):
         labels = [{"name": "screw", "id": 1}]
@@ -102,9 +105,82 @@ class Prepare:
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
 
-        command = f"python {self.apimodel_path}/research/object_detection/model_main_tf2.py --model_dir={self.model_path}/{self.modelName} --pipeline_config_path={self.model_path}/{self.modelName}/pipeline.config --alsologtostderr --num_train_steps=12000"
+        command = f"python {self.apimodel_path}/research/object_detection/model_main_tf2.py --model_dir={self.model_path}/{self.modelName} --pipeline_config_path={self.config_path} --alsologtostderr --num_train_steps=12000"
         os.system(command)
 
     def evaluate(self):
-        eval_commmand = f"tensorboard --logdir={self.model_path}"
-        os.system(eval_commmand)
+        # eval_commmand = f"tensorboard --logdir={self.model_path}"
+        # os.system(eval_commmand)
+
+        command = f"python {self.apimodel_path}/research/object_detection/model_main_tf2.py --model_dir={self.model_path}/{self.modelName} --pipeline_config_path={self.config_path} --checkpoint_dir={self.checkpoint_path}"
+        os.system(command)
+        eval_command = f"tensorboard --logdir={self.eval_path}"
+        os.system(eval_command)
+
+    def load(self):
+        configs = config_util.get_configs_from_pipeline_file(self.config_path)
+        detection_model = model_builder.build(
+            model_configs=configs["model"], is_training=False
+        )
+
+        ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
+        ckpt.restore(os.path.join(self.checkpoint_path, "ckpt-7")).expect_partial()
+
+    def realtime_detect(self):
+        category_index = label_map_util.create_category_index_from_labelmap(
+            self.annotation_path + "/label_map.pbtxt"
+        )
+
+        cap = cv2.VideoCapture(0)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        while True:
+            ret, frame = cap.read()
+            image_np = np.array(frame)
+
+            input_tensor = tf.convert_to_tensor(
+                np.expand_dims(image_np, 0), dtype=tf.float32
+            )
+            detections = self.detect(input_tensor)
+
+            num_detections = int(detections.pop("num_detections"))
+
+            detections = {
+                key: value[0, :num_detections].numpy()
+                for key, value in detections.item()
+            }
+            detections["num_detections"] = num_detections
+            detections["detection_classes"] = detections["detection_classes"].astype(
+                np.int64
+            )
+
+            label_id_offset = 1
+            image_np_with_detections = image_np.copy()
+
+            viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np_with_detections,
+                detections["detection_boxes"],
+                detections["detection_classes"] + label_id_offset,
+                detections["detection_scores"],
+                category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=1,
+                min_score_thresh=0.3,
+                agnostic_mode=False,
+            )
+
+            cv2.imshow(
+                "screw detection", cv2.resize(image_np_with_detections, (800, 600))
+            )
+
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                cap.release()
+                break
+
+    @tf.function
+    def detect(self, image):
+        images, shapes = self.detection_model.preprocess(image)
+        prediction_dict = self.detection_model.predict(images, shapes)
+        detections = self.detection_model.postprocess(prediction_dict, shapes)
+        return detections

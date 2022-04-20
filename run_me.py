@@ -1,14 +1,16 @@
-import os
-
 from scripts.set import *
 
-
-preparation = Prepare(
+# Call the function to prepare the model and pass the link of any model as a string argument
+model = Prepare(
     "http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8.tar.gz"
 )
 
-# preparation.annotate()
-# preparation.download_model()
-# preparation.update_config()
-# preparation.train_model()
-preparation.evaluate()
+model.annotate()  # Creates label and record files
+
+model.download_model()  # Downloads model corresponding to link passed as argument
+
+model.update_config()  # Updates the pipeline confifuration file in the model folder of the desired model
+
+model.train_model()  # Train the model using th pipeline configuration file to derive new checkpoints
+
+model.evaluate()  # evaluate the metrics of the model
