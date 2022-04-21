@@ -12,6 +12,7 @@ All dependencies used are in their latest versions as of 20-04-22, and their cor
 2. Object-detection-api
 3. OpenCV
 4. Numpy
+5. Pythonautogui for screen capture when testing model
 
 # CONFIGURATION
 1. Create a Project folder with this given directory tree:
@@ -28,7 +29,7 @@ All dependencies used are in their latest versions as of 20-04-22, and their cor
 ```bash
 git clone  https://github.com/AsimovNo9/ScrewDetection.git
 ```
-2. Run the run_me.py file using your choice of IDE or your commandline 
+2. Run the run_me.py file using your choice of IDE or your commandline (uncomment lines if they are commented) 
 ```bash
 python ./run_me.py
 ```
