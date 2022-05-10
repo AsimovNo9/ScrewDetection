@@ -18,10 +18,8 @@ model = Prepare(
 
 # model.train_model()  # Train the model using th pipeline configuration file to derive new checkpoints
 
-# model.evaluate()  # evaluate the metrics of the model
+model.evaluate()  # evaluate the metrics of the model
 
-detection_model = model.load()  # Load the model and save in a  variable detection_model
+# detection_model = model.load() #Load the model and save in a  variable detection_model
 
-model.realtime_detect(
-    detection_model
-)  # Start real time detection using the loaded model
+# model.realtime_detect(detection_model) # Start real time detection using the loaded model

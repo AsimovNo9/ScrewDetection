@@ -175,9 +175,10 @@ def create_tf_example(group, path):
 
 def main(_):
 
-    writer = tf.python_io.TFRecordWriter(args.output_path)
+    writer = tf.io.TFRecordWriter(args.output_path)
     path = os.path.join(args.image_dir)
     examples = xml_to_csv(args.xml_dir)
+    # examps = pd.read_csv("./workspace/annotations/Images_aug.csv")
     grouped = split(examples, "filename")
     for group in grouped:
         tf_example = create_tf_example(group, path)

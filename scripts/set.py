@@ -44,10 +44,13 @@ class Prepare:
                 f.write("\tid:{}\n".format(label["id"]))
                 f.write("}\n")
 
-        command_train = f"python {self.scripts_path}/generate_tfrecord.py -x {self.image_path}/train -l {self.annotation_path}/label_map.pbtxt -o {self.annotation_path}/train.record"
-        os.system(command_train)
+        # command_train = f"python {self.scripts_path}/generate_tfrecord.py -i {self.image_path}/train -l {self.annotation_path}/label_map.pbtxt -c {self.annotation_path}/Images_aug.csv -o {self.annotation_path}/train.record"
+        # command_train = f"python {self.scripts_path}/csv_to_tfrecords.py -p {self.annotation_path}/Images_aug.csv --out_dir {self.annotation_path}"
+        # os.system(command_train)
         command_test = f"python {self.scripts_path}/generate_tfrecord.py -x {self.image_path}/test -l {self.annotation_path}/label_map.pbtxt -o {self.annotation_path}/test.record"
         os.system(command_test)
+        command_train = f"python {self.scripts_path}/generate_tfrecord.py -x {self.image_path}/train -l {self.annotation_path}/label_map.pbtxt -o {self.annotation_path}/train.record"
+        os.system(command_train)
 
     def download_model(self):
 
@@ -60,6 +63,8 @@ class Prepare:
             extract=True,
         )
 
+        print("file downloaded successfully")
+
     def update_config(self):
         config = config_util.get_configs_from_pipeline_file(self.config_path)
         pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -68,12 +73,12 @@ class Prepare:
             text_format.Merge(proto_str, pipeline_config)
 
         pipeline_config.model.ssd.num_classes = 1
-        pipeline_config.train_config.batch_size = 2
+        pipeline_config.train_config.batch_size = 5
         pipeline_config.train_config.fine_tune_checkpoint = (
             self.pretrained_model_path
             + "/datasets/"
             + self.modelName
-            + "/checkpoint/ckpt-7"  # Change based off which checkpoint you are training from
+            + "/checkpoint/ckpt-0"  # Change based off which checkpoint you are training from
         )
         pipeline_config.train_config.fine_tune_checkpoint_type = "detection"
         pipeline_config.train_input_reader.label_map_path = (
@@ -88,12 +93,11 @@ class Prepare:
         pipeline_config.eval_input_reader[0].tf_record_input_reader.input_path[:] = [
             self.annotation_path + "/train.record"
         ]
-        pipeline_config.eval_input_reader[0].num_epochs = 3
         pipeline_config.train_config.optimizer.momentum_optimizer.learning_rate.cosine_decay_learning_rate.learning_rate_base = (
-            0.005
+            0.0005
         )
         pipeline_config.train_config.optimizer.momentum_optimizer.learning_rate.cosine_decay_learning_rate.warmup_learning_rate = (
-            0.001
+            0.0001
         )
 
         config_text = text_format.MessageToString(pipeline_config)
@@ -102,9 +106,23 @@ class Prepare:
 
     def train_model(self):
 
+        gpus = tf.config.experimental.list_physical_devices("GPU")
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+
         # gpus = tf.config.experimental.list_physical_devices("GPU")
-        # for gpu in gpus:
-        #     tf.config.experimental.set_memory_growth(gpu, True)
+        # if gpus:
+        #     try:
+        #         tf.config.experimental.set_virtual_device_configuration(
+        #             gpus[0],
+        #             [
+        #                 tf.config.experimental.VirtualDeviceConfiguration(
+        #                     memory_limit=2048
+        #                 )
+        #             ],
+        #         )
+        #     except RuntimeError as e:
+        #         print(e)
 
         command = f"python {self.apimodel_path}/research/object_detection/model_main_tf2.py --model_dir={self.model_path}/{self.modelName} --pipeline_config_path={self.config_path} --alsologtostderr --num_train_steps=30000"
         os.system(command)
@@ -113,7 +131,7 @@ class Prepare:
         # eval_commmand = f"tensorboard --logdir={self.model_path}"
         # os.system(eval_commmand)
 
-        command = f"python {self.apimodel_path}/research/object_detection/model_main_tf2.py --model_dir={self.model_path}/{self.modelName} --pipeline_config_path={self.config_path} --checkpoint_dir={self.checkpoint_path}"
+        command = f"python {self.apimodel_path}/research/object_detection/model_main_tf2.py --model_dir={self.model_path}/{self.modelName} --pipeline_config_path={self.config_path} --alsologtostderr --checkpoint_dir={self.checkpoint_path}"
         os.system(command)
         eval_command = f"tensorboard --logdir={self.eval_path}"
         os.system(eval_command)
@@ -126,7 +144,7 @@ class Prepare:
 
         ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
         ckpt.restore(
-            os.path.join(self.checkpoint_path, "ckpt-31")
+            os.path.join(self.checkpoint_path, "ckpt-32")
         ).expect_partial()  # Restore based off last created checkpoint
         return detection_model
 
