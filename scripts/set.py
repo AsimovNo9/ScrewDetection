@@ -93,12 +93,12 @@ class Prepare:
         pipeline_config.eval_input_reader[0].tf_record_input_reader.input_path[:] = [
             self.annotation_path + "/train.record"
         ]
-        pipeline_config.train_config.optimizer.momentum_optimizer.learning_rate.cosine_decay_learning_rate.learning_rate_base = (
-            0.0005
-        )
-        pipeline_config.train_config.optimizer.momentum_optimizer.learning_rate.cosine_decay_learning_rate.warmup_learning_rate = (
-            0.0001
-        )
+        # pipeline_config.train_config.optimizer.momentum_optimizer.learning_rate.cosine_decay_learning_rate.learning_rate_base = (
+        #     0.0005
+        # )
+        # pipeline_config.train_config.optimizer.momentum_optimizer.learning_rate.cosine_decay_learning_rate.warmup_learning_rate = (
+        #     0.0001
+        # )
 
         config_text = text_format.MessageToString(pipeline_config)
         with tf.io.gfile.GFile(self.config_path, "wb") as f:
