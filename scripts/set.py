@@ -135,7 +135,7 @@ class Prepare:
 
         ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
         ckpt.restore(
-            os.path.join(self.checkpoint_path, "ckpt-26")
+            os.path.join(self.checkpoint_path, "ckpt-32")
         ).expect_partial()  # Restore based off last created checkpoint
         return detection_model
 

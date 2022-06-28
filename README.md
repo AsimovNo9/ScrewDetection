@@ -34,6 +34,14 @@ git clone  https://github.com/AsimovNo9/ScrewDetection.git
 python ./run_me.py
 ```
 
+# Real Time Detection
+
+Stream screen for possibility of running detections in real time, while scrolling through your browser or watching a video off youtube or something, I think it's a more dexterous way to go. Recommended to extend your display to another monitor, unless you have some work around.
+
+Here are images of me scrolling through images of screws and the model detecting in real time
+
+![Screw Detection With Screen Capturing](./images/screw_detections.gif)
+
 
 
 
