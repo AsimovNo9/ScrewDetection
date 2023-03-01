@@ -4,7 +4,7 @@
 **Email: adedamola.sode@gmail.com**
 
 # BRIEF DESCRIPTION 
-This project follows the tutorial of <a href = "https://www.youtube.com/channel/UCHXa4OpASJEwrHrLeIzw7Yg">Nicholas Renotte</a> on youtube, specifically using this video: <a href ="https://www.youtube.com/watch?v=IOI0o3Cxv9Q&ab_channel=NicholasRenotte">Real Time Face Mask Detection with Tensorflow and Python | Custom Object Detection w/ MobileNet SSD</a>.
+This project follows the tensorflow documentation, but here's a good tutorial I found that will help you get started:  <a href = "https://www.youtube.com/channel/UCHXa4OpASJEwrHrLeIzw7Yg">Nicholas Renotte</a> on youtube, specifically using this video: <a href ="https://www.youtube.com/watch?v=IOI0o3Cxv9Q&ab_channel=NicholasRenotte">Real Time Face Mask Detection with Tensorflow and Python | Custom Object Detection w/ MobileNet SSD</a>.
 
 # DEPENDENCIES REQUIRED TO BUILD AND RUN
 All dependencies used are in their latest versions as of 20-04-22, and their corrsponding libraries and dependencies which follow suit:
